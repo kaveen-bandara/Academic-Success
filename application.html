@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content = "width = device-width, initial-scale = 1.0">
+    <title>Academic Success Prediction</title>
+    <style>
+        body {
+            background-color: rgb(5, 58, 58);
+        }
+
+        .form-container {
+            max-width: 500px;
+            background-color: white;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .form_input {
+            display: block;
+            margin-top: 5px;
+        }
+
+        .submitbtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submitbtn:hover {
+            background-color: #45a049;
+        }
+
+        .output {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class = "form-container">
+        <form id = "uploadForm">
+            <label class = "label">
+                Upload CSV File
+                <input class = "form_input" type = "file" name = "file" accept = ".csv" required>
+            </label>
+            <button type = "submit" class = "submitbtn">Submit</button>
+        </form>
+        <p id = "output" class = "output"></p>
+    </div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const formData = new FormData();
+        const fileInput = document.querySelector('input[name = "file"]');
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const response = await fetch('http://localhost:8000/predict', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await response.json();
+            const predictions = data.prediction;
+            const predictionNames = predictions.map(pred => {
+                if (pred === 0) return 'Dropout';
+                if (pred === 1) return 'Enrolled';
+                if (pred === 2) return 'Graduate';
+                return 'Unknown';
+            }).join(', ');
+            document.getElementById('output').textContent = `Prediction: ${predictionNames}`;
+        } 
+        catch (error) {
+            console.error('Error making prediction:', error);
+            document.getElementById('output').textContent = 'Error making prediction!';
+        }
+    });
+</script>
+</body>
+</html>
